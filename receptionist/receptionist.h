@@ -22,3 +22,7 @@
 using namespace std;
 
 void serviceTime(int ordertime);
+
+void addToLogFile(Project_Memory* pm, char* fileName, char* msg);
+
+void serviceOrder(Project_Memory* pm, int ordertime, char* fileName);

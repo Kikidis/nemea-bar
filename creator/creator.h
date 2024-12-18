@@ -16,19 +16,19 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <semaphore.h>
+#include <wait.h>
 
 #define TABLES 3
 #define CHAIRS 4
 #define SEGMENTPERM 0666
-#define VISITORSNUM 100
+#define VISITORSNUM 10
 
 using namespace std;
 
 
 struct Table{
-    int chairs[4];
+    int chairs[4];  // 0 αδεια θεση, 1 κατειλημμένη
     bool can_i_sit;     // Αν ειναι true ενας επισκεπτης μπορει να κατσει, αλλιως οχι 
-    int current_free_chair;    // Σε ποια καρεκλα μπορει να κατσει ενας επισκεπτης
     int reserved_chairs;    // ποσες καρεκλες ειναι κατειλημμενες
 };
 
@@ -44,17 +44,17 @@ struct Stats{
     int num_wine;
     int num_cheese;
     int num_salads;
-    int visit_dur;
+    double visit_dur;
     int num_visitors;
-    int waiting_time;
+    double waiting_time;
 };
 
 /*
     Ο receptionist κολλαει (μπλοκαρει) στον semaphore του και περιμενει να του κανει Post Καποιος visitor που εχει βαλει παραγγελια.
     Εξυπηρετει την παραγγελια και κανει Post στον visitor να παρει τα πραγματα και ξανα μπλοκαρει. Περιμενοντας τον επομενο visitor.
-    Οι visitors οταν ερχονται μπλοκαρονται στο entance, εκτος απο εναν. Στην περιοχη των τραπεζιων μπαινει μονο ενας visitor 
-    και συμπεριφερεται ως εξης: - βρισκει καρεκλα και αν υπαρχουνε κενες θεσεις οπουδηποτε κανει Post στο entrance, αλλιως οχι
-    και προχωραει για την παραγγελια του. εμας visitor Που φευγει αν ειναι ο τελευταιος τοτε κοιτα αν υπαρχουνε σε αλλα τραπεζια ελευθερες θεσεις,
+    Οι visitors οταν ερχονται μπλοκαρονται στο entrance, εκτος απο εναν. Στην περιοχη των τραπεζιων μπαινει μονο ενας visitor 
+    και συμπεριφερεται ως εξης: - βρισκει καρεκλα και αν υπαρχουν κενες θεσεις οπουδηποτε κανει Post στο entrance, αλλιως οχι
+    και προχωραει για την παραγγελια του. εvας visitor Που φευγει αν ειναι ο τελευταιος τοτε κοιτα αν υπαρχουν σε αλλα τραπεζια ελευθερες θεσεις,
     αν υπαρχουν απλως φευγει, αν δεν υπαρχουν τοτε κανει Post στο entrance. Προσπαθουμε παντα το entrance να ειναι 0 η 1 ωστε οποιος μπαινει 
     να μπορει παντα να βρει μια θεση ελευθερη.
 */
@@ -82,5 +82,7 @@ void createVisitors(int resttime, int id);
 void createReceptionist(int ordertime, int id);
 
 void createLogFile(char* fileName);
+void addToLogFile(char* fileName, char* msg);
 
 void free_project_memory(int shmid);
+

@@ -1,1 +1,101 @@
-logfile just created.
+LogFile just created.
+Visitor 36056: Found table 0 and chair 0.
+
+Visitor 36056: Ready to place an order.
+
+Visitor 36059: Found table 0 and chair 0.
+
+Visitor 36059: Ready to place an order.
+
+Visitor 36060: Found table 0 and chair 0.
+
+Visitor 36060: Ready to place an order.
+
+Visitor 36058: Found table 0 and chair 0.
+
+Visitor 36058: Ready to place an order.
+
+Visitor 36057: Found table 1 and chair 0.
+
+Visitor 36057: Ready to place an order.
+
+Visitor 36064: Found table 1 and chair 0.
+
+Visitor 36064: Ready to place an order.
+
+Visitor 36062: Found table 1 and chair 0.
+
+Visitor 36062: Ready to place an order.
+
+Visitor 36063: Found table 1 and chair 0.
+
+Visitor 36063: Ready to place an order.
+
+Visitor 36061: Found table 2 and chair 0.
+
+Visitor 36061: Ready to place an order.
+
+Visitor 36065: Found table 2 and chair 0.
+
+Visitor 36065: Ready to place an order.
+
+Receptionist: Just complete the order.
+
+Visitor: Took the order.
+
+Receptionist: Just complete the order.
+
+Visitor 36056: Leaving Nemea.
+
+Visitor: Took the order.
+
+Visitor 36059: Leaving Nemea.
+
+Receptionist: Just complete the order.
+
+Visitor: Took the order.
+
+Visitor 36060: Leaving Nemea.
+
+Receptionist: Just complete the order.
+
+Visitor: Took the order.
+
+Receptionist: Just complete the order.
+
+Visitor 36058: Leaving Nemea.
+
+Visitor: Took the order.
+
+Visitor 36057: Leaving Nemea.
+
+Receptionist: Just complete the order.
+
+Visitor: Took the order.
+
+Receptionist: Just complete the order.
+
+Visitor: Took the order.
+
+Visitor 36064: Leaving Nemea.
+
+Receptionist: Just complete the order.
+
+Visitor: Took the order.
+
+Visitor 36062: Leaving Nemea.
+
+Visitor 36063: Leaving Nemea.
+
+Receptionist: Just complete the order.
+
+Visitor: Took the order.
+
+Receptionist: Just complete the order.
+
+Visitor: Took the order.
+
+Visitor 36061: Leaving Nemea.
+
+Visitor 36065: Leaving Nemea.
+

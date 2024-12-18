@@ -18,4 +18,14 @@
 #include <semaphore.h>
 
 
+#include "../creator/creator.h"
+
 using namespace std;
+
+void placeOrder(Project_Memory* pm);
+
+void addToLogFile(Project_Memory* pm, char* fileName, char* msg);
+
+bool isEmptyChair(Project_Memory* pm);
+
+void restTime(int resttime);

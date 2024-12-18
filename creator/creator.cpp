@@ -20,7 +20,6 @@ Project_Memory* createInIt_memory(int* id){
     // tables
     for(int i =0; i < TABLES; i++){
         pm->tables[i].can_i_sit = true;
-        pm->tables[i].current_free_chair = 0;
         pm->tables[i].reserved_chairs = 0;
         for(int j = 0; j < CHAIRS; j++){
             pm->tables[i].chairs[j] = 0;
@@ -43,6 +42,7 @@ Project_Memory* createInIt_memory(int* id){
     pm->stats.waiting_time = 0;
 
     /* Initialize the semaphore. */
+    // το δευτερο ορισμα ειναι 1 για processes και το τριτο ειναι η αρχικοποιηση του
     int retval = sem_init (&pm->semaphores.mtx_tables ,1 , 1);   
     if (retval != 0) {
         cout<< "Couldn't initialize semaphore." << endl;
@@ -68,7 +68,7 @@ Project_Memory* createInIt_memory(int* id){
         cout<< "Couldn't initialize semaphore." << endl;
         exit (3); 
     }
-    retval = sem_init (&pm->semaphores.mtx_log ,1 , 0);   
+    retval = sem_init (&pm->semaphores.mtx_log ,1 , 1);   
     if (retval != 0) {
         cout<< "Couldn't initialize semaphore." << endl;
         exit (3); 
@@ -114,7 +114,7 @@ void createVisitors(int resttime, int id){
             exit(1);
         }
         if(pid == 0){
-            int retval = execl ("../visitor/visitor", "./visitor", rest_time, shm_id, NULL);
+            int retval = execl ("../visitor/visitor", "./visitor", "-d", rest_time, "-s", shm_id, NULL);
             if(retval == -1){
                 cout << "exel failed." << endl;
                 exit(1);
@@ -139,23 +139,32 @@ void createReceptionist(int ordertime, int id){
     }
 }
 
-
+ // Δημιουργουμε το Logfile
 void createLogFile(char* fileName){
     FILE* fp = fopen(fileName, "w");
-    fprintf(fp, "%s\n", "logfile just created.");
+    fprintf(fp, "%s\n", "LogFile just created.");
     fclose(fp);
+}
 
+void addToLogFile(char* fileName, char* msg){
+    FILE* fp = fopen(fileName, "a");
+    fprintf(fp, "%s\n", msg);
+    fclose(fp);
 }
 
 int main(){
     int id;
-    char filename[100];
-    strcpy(filename, "../LogFile.txt");
+    int ret, status;
+    char fileName[100];
+    strcpy(fileName, "../LogFile.txt");
     
-    Project_Memory *p = createInIt_memory(&id);cout<< "receptionist i am here"<< endl;
-    createLogFile(filename);
+    Project_Memory *p = createInIt_memory(&id);
+    createLogFile(fileName);
     createReceptionist(3, id);
-    free_project_memory(id, p);
+    createVisitors(2, id);
 
+    while((ret = wait(&status)) != -1);
+    free_project_memory(id, p);
+    
 
 }
