@@ -52,6 +52,7 @@ int main(int argc , char **argv){
     srand(time(NULL));  // Αρχικοποιω την rand με το time
     int ordertime = atoi(argv[2]);
     int shmid = atoi(argv[4]);
+    int visitors_num = atoi(argv[6]);
     char fileName[100];
     strcpy(fileName, "../LogFile.txt");
 
@@ -59,15 +60,19 @@ int main(int argc , char **argv){
 
     Project_Memory* pm;
     pm = (Project_Memory *) shmat(shmid , NULL, 0);   // Προσαρτούμε την μνήμη
-    if ( pm == NULL){
+    if ( pm == (void *) -1){
         cout << "Receptionist: Cant attach share memory. Program is terminating..." << endl;
         exit (1);
     }
-    cout<< "Receptionist i am here"<< endl;
-    while(true){
+    cout<< "Receptionist i am here."<< endl;
+    for(int i = 0; i < visitors_num; i++){
         sem_wait(&pm->semaphores.mtx_receptionist); // ο receptionist περιμενει καποιον visitor να του κανει Post
-        serviceOrder(pm, ordertime, fileName);
+        serviceOrder(pm, ordertime, fileName);  // εξυπηρετει την παραγγελια και ενυημερωνει τα stats
         sem_post(&pm->semaphores.mtx_visitor);  // ειδοποιουμε τον visitor να παρει την παραγγελια
     }
+    // detaches the segment:
+    int err;
+    err = shmdt((void *)pm);    // αποσυνδεομαι απο την μνημη
+    if ( err == -1 ) perror("Detachment");
 
 }

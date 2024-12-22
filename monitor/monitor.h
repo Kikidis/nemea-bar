@@ -17,5 +17,9 @@
 #include <sys/shm.h>
 #include <semaphore.h>
 
+#include "../creator/creator.h"
 
 using namespace std;
+
+void printStats(Project_Memory* pm);
+void printTablesState(Project_Memory* pm);

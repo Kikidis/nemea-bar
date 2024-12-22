@@ -21,7 +21,7 @@
 #define TABLES 3
 #define CHAIRS 4
 #define SEGMENTPERM 0666
-#define VISITORSNUM 10
+#define VISITORSNUM 50
 
 using namespace std;
 
@@ -83,6 +83,8 @@ void createReceptionist(int ordertime, int id);
 
 void createLogFile(char* fileName);
 void addToLogFile(char* fileName, char* msg);
+
+void printStatistics(Project_Memory* pm);
 
 void free_project_memory(int shmid);
 

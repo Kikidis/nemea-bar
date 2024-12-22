@@ -21,8 +21,9 @@ void addToLogFile(Project_Memory* pm, char* fileName, char* msg){
     sem_post(&pm->semaphores.mtx_log);
 }
 
-
+// Κανει τυχαια παραγγελια
 void placeAndGetOrder(Project_Memory* pm){
+    srand(getpid());  // Αρχικοποιω την rand με το time
     int randNum = rand()%3;
     if(randNum == 0){
         pm->orders.water = 1;
@@ -55,33 +56,38 @@ bool isEmptyChair(Project_Memory* pm){
 
 
 int main (int argc , char **argv){
-    srand(time(NULL));  // Αρχικοποιω την rand με το time
+    srand(getpid());  // Αρχικοποιω την rand με το time
     int resttime = atoi(argv[2]);
     int shmid = atoi(argv[4]);
-    int table, chair;
+    int table, chair, wait_before_entrance;
     char fileName[100], logmsg[100];
     double t1, t2, t3;  //  t1 = time before entrance, t2 = time after entrance, t3 = leaving time
     struct tms tb1 , tb2, tb3;
     double ticspersec;
     strcpy(fileName, "../LogFile.txt");
 
+    // ΘΑ ΠΡΕΠΕΙ ΝΑ ΜΗΝ ΕΡΧΟΝΤΑΙ ΟΛΟΙ ΜΑΖΙ ΟΙ VISITORS
+    wait_before_entrance = rand() % 25;
+    sleep(wait_before_entrance);
+
     ticspersec = (double) sysconf(_SC_CLK_TCK);
     t1 = (double) times(&tb1);  // ποτε ηρθε ο visitor
-// ΘΑ ΠΡΕΠΕΙ ΝΑ ΜΗΝ ΕΡΧΟΝΤΑΙ ΟΛΟΙ ΜΑΖΙ ΟΙ VISITORS
 
     Project_Memory* pm;
     pm = (Project_Memory *) shmat(shmid , NULL, 0);   // Προσαρτούμε την μνήμη
-    if ( pm == NULL){
+    if ( pm == (void *) -1){
         cout << "Visitor: Cant attach share memory. Program is terminating..." << endl;
         exit (1);
     }
+
+    // Θα πρεπει τωρα να περιμενει στην ουρα για να παρει καρεκλα και μετα να παραγγειλει 
+    sem_wait(&pm->semaphores.mtx_entrance);
+    
     // ενημερωνω το πληθος των visitors για τα στατιστικα 
     sem_wait(&pm->semaphores.mtx_stats);
     pm->stats.num_visitors++;
     sem_post(&pm->semaphores.mtx_stats);
 
-    // Θα πρεπει τωρα να περιμενει στην ουρα για να παρει καρεκλα και μετα να παραγγειλει 
-    sem_wait(&pm->semaphores.mtx_entrance);
     t2 = (double) times(&tb2);  // χρονος για το ποτε εφυγε απο την ουρα και παει να βρει τραπεζι 
     sem_wait(&pm->semaphores.mtx_tables);   // Στην περιοχη των τραπεζιων-καρεκλών πρεπει να ειναι ΜΟΝΟ ενας visitor
     for(int i = 0; i < 3; i++){     // ψαχνω σε ποιο τραπεζι μπορω να κατσω(παντα υπαρχει ενα που μπορω)
@@ -90,6 +96,7 @@ int main (int argc , char **argv){
             for(int j = 0; j < 4 ; j++){    // ψαχνω σε ποια καρεκλα του τραπεζιου i μπορω να κατσω
                 if(pm->tables[i].chairs[j] == 0){   // βρηκα ελευθερη καρεκλα
                     chair = j;
+                    pm->tables[i].chairs[chair] = getpid();    // καταλαμβανω την καρεκλα
                     pm->tables[i].reserved_chairs++;    //ενημερωνω ποσες καρεκλες ειναι κατειλημμενες
                     if(pm->tables[i].reserved_chairs == 4){ // αν επιασα την τελευταια ελευθερη καρεκλα
                         pm->tables[i].can_i_sit = false;    
@@ -123,8 +130,8 @@ int main (int argc , char **argv){
     restTime(resttime); // Εδω καταναλλωνει οτι πηρε απο το μπαρ και κανει sleep()
 
     sem_wait(&pm->semaphores.mtx_tables);
-    pm->tables[table].chairs[chair] = 0;
-    pm->tables[table].reserved_chairs--;
+    pm->tables[table].chairs[chair] = 0;        // απελευθερωνω την καρεκλα
+    pm->tables[table].reserved_chairs--;    
     if(pm->tables[table].reserved_chairs == 0){
         if(!isEmptyChair(pm)){
             sem_post(&pm->semaphores.mtx_entrance);
@@ -139,12 +146,17 @@ int main (int argc , char **argv){
     t3 = (double) times(&tb3);  // Ο χρονος που φευγει ο visitor
     // Ενημερωνουμε τα στατιστικα για το time
     sem_wait(&pm->semaphores.mtx_stats);
-    pm->stats.waiting_time += ((t2-t1) / ticspersec);
-    pm->stats.waiting_time += ((t3-t2) / ticspersec);    
+    pm->stats.waiting_time += ((t2-t1) / ticspersec);   // χρονος παραμονής στο entrance
+
+    pm->stats.visit_dur += ((t3-t2) / ticspersec);     // χρονος μετα το entrance μεχρι που εφυγε 
     sem_post(&pm->semaphores.mtx_stats);
-    sprintf(logmsg, "Visitor %d: Leaving Nemea.\n", getpid());
+    sprintf(logmsg, "Visitor %d: Leaving Nemea after %.2lf.\n", getpid(), ((t3-t1) / ticspersec)); 
     addToLogFile(pm, fileName, logmsg);
+    
+    // detaches the segment:
+    int err;
+    err = shmdt((void *)pm);    // αποσυνδεομαι απο την μνημη
+    if ( err == -1 ) perror("Detachment");
+
     cout<< " Visitor just finished."<< endl;
-
-
 }

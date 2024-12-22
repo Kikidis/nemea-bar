@@ -87,16 +87,16 @@ void free_project_memory(int shmid, Project_Memory* pm){
 
     // detaches the segment:
     int err;
-    err = shmdt((void *)pm);
+    err = shmdt((void *)pm);    // αποσυνδεομαι απο την μνημη
     if ( err == -1 ) perror("Detachment");
     
     /* Remove segment. */
-    err = shmctl(shmid, IPC_RMID , 0);
+    err = shmctl(shmid, IPC_RMID , 0);      // διαγραφω την μνημη
     if (err == -1){
         perror("Removal.");
     }
     else
-        printf("Removed. %d\n", err);
+        printf("Removed. Errors: %d\n", err);
 
 
 }
@@ -127,15 +127,16 @@ void createVisitors(int resttime, int id){
 void createReceptionist(int ordertime, int id){
     pid_t pid;
     char order_time[100];
-    char shm_id[100];
+    char shm_id[100], visitors_num[100];
     sprintf(order_time, "%d", ordertime);
     sprintf(shm_id, "%d", id);
+    sprintf(visitors_num, "%d", VISITORSNUM);
     pid = fork();
     if(pid == -1){
         exit(1);
     }
     if(pid == 0){
-        execl ("../receptionist/receptionist", "./receptionist", "-d", order_time, "-s", shm_id, NULL);
+        execl ("../receptionist/receptionist", "./receptionist", "-d", order_time, "-s", shm_id, "-v", visitors_num, NULL);
     }
 }
 
@@ -152,19 +153,31 @@ void addToLogFile(char* fileName, char* msg){
     fclose(fp);
 }
 
+void printStatistics(Project_Memory* pm){
+    cout << "Statistics:" << endl;
+    cout << "Number of visitors: " << pm->stats.num_visitors << endl;
+    cout << "Number of water: " << pm->stats.num_water << endl;
+    cout << "Number of wine: " << pm->stats.num_wine << endl;
+    cout << "Number of cheese: " << pm->stats.num_cheese << endl;
+    cout << "Number of salads: " << pm->stats.num_salads << endl;
+    cout << "Average waiting time: " << pm->stats.waiting_time / pm->stats.num_visitors << endl;
+    cout << "Average visit duration: " << pm->stats.visit_dur / pm->stats.num_visitors << endl;
+}
+
 int main(){
     int id;
     int ret, status;
     char fileName[100];
     strcpy(fileName, "../LogFile.txt");
     
-    Project_Memory *p = createInIt_memory(&id);
+    Project_Memory *pm = createInIt_memory(&id);
+    printf("I am creator. Share memory ID: %d\n", id);
     createLogFile(fileName);
     createReceptionist(3, id);
     createVisitors(2, id);
 
-    while((ret = wait(&status)) != -1);
-    free_project_memory(id, p);
-    
+    while((ret = wait(&status)) != -1); // wait for all children to finish
+    printStatistics(pm);
+    free_project_memory(id, pm);
 
 }
