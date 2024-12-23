@@ -97,7 +97,7 @@ int main (int argc , char **argv){
                 if(pm->tables[i].chairs[j] == 0){   // βρηκα ελευθερη καρεκλα
                     chair = j;
                     pm->tables[i].chairs[chair] = getpid();    // καταλαμβανω την καρεκλα
-                    pm->tables[i].reserved_chairs++;    //ενημερωνω ποσες καρεκλες ειναι κατειλημμενες
+                    pm->tables[i].reserved_chairs++;    // ενημερωνω ποσες καρεκλες ειναι κατειλημμενες
                     if(pm->tables[i].reserved_chairs == 4){ // αν επιασα την τελευταια ελευθερη καρεκλα
                         pm->tables[i].can_i_sit = false;    
                     }

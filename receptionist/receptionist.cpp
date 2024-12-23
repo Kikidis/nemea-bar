@@ -67,7 +67,7 @@ int main(int argc , char **argv){
     cout<< "Receptionist i am here."<< endl;
     for(int i = 0; i < visitors_num; i++){
         sem_wait(&pm->semaphores.mtx_receptionist); // ο receptionist περιμενει καποιον visitor να του κανει Post
-        serviceOrder(pm, ordertime, fileName);  // εξυπηρετει την παραγγελια και ενυημερωνει τα stats
+        serviceOrder(pm, ordertime, fileName);  // εξυπηρετει την παραγγελια και ενημερωνει τα stats
         sem_post(&pm->semaphores.mtx_visitor);  // ειδοποιουμε τον visitor να παρει την παραγγελια
     }
     // detaches the segment:
